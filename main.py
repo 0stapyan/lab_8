@@ -1,3 +1,4 @@
+import random
 import time
 
 import pgzrun
@@ -153,6 +154,7 @@ bb = Ball()
 b1 = [Blocks1(x*45+45, y*45) for x in range(12) for y in range(3, 6)]
 b2 = [Blocks2((x+1)*27+85*x, y*45) for x in range(5) for y in range(6, 9)]
 fin = Finish()
+new_health = []
 
 
 def draw():
@@ -164,6 +166,7 @@ def draw():
     bb.draw()
     [x.draw() for x in b1]
     [x.draw() for x in b2]
+    [h.draw() for h in new_health]
     if bb.tries == 0:
         screen.clear()
         bg.draw()
@@ -173,8 +176,15 @@ def draw():
 
 def update(dt):
     bb.update()
-    if bb.tries == 0:
-        bb.tries = 3
+    if random.random() < 0.001:
+        ah = AddHealth(Vector(random.randint(0, WIDTH), 55))
+        new_health.append(ah)
+    for h in new_health:
+        h.move(dt)
+        if 800 >= h.position.y >= 763:
+            if pad.position.x - 62 < h.position.x < pad.position.x + 62:
+                bb.tries += 1
+                new_health.remove(h)
 
 
 def on_mouse_move(pos):
