@@ -105,6 +105,23 @@ class Blocks2:
         pass
 
 
+class AddHealth:
+
+    def __init__(self, pos):
+        self.actor = Actor('he1.png')
+        self.position = pos
+        self.velocity = Vector(0, 100)
+
+    def move(self, dt):
+        self.position.x += self.velocity.x * dt
+        self.position.y += self.velocity.y * dt
+
+    def draw(self):
+        self.actor.x = self.position.x
+        self.actor.y = self.position.y
+        self.actor.draw()
+
+
 class Finish:
 
     def __init__(self):
