@@ -3,10 +3,6 @@ import time
 import pgzrun
 from pgzero.actor import Actor
 
-ball_x_speed = 3
-ball_y_speed = 3
-
-
 class Paddle:
 
     def __init__(self):
@@ -42,26 +38,40 @@ class Ball:
         self.position = Vector(265, 630)
         self.velocity = Vector(0, 0)  # speed- scalar, velocity - vector
         self.goal = Vector(pad.position.x, pad.position.y)
+        self.ball_x_speed = 3
+        self.ball_y_speed = 3
 
     def draw(self):
         screen.draw.filled_circle((self.position.x, self.position.y), 13, "indigo")
 
     def update(self):
-        global ball_x_speed, ball_y_speed
-        self.position.x += ball_x_speed
-        self.position.y += ball_y_speed
+        self.position.x += self.ball_x_speed
+        self.position.y += self.ball_y_speed
         if (self.position.x >= WIDTH) or (self.position.x <= 0):
-            ball_x_speed *= -1
-        if self.position.y <= 0:
-            ball_y_speed *= -1
+            self.ball_x_speed *= -1
+        if self.position.y <= 66:
+            self.ball_y_speed *= -1
         if self.position.y >= pad.position.y - 5:
             if pad.position.x - 62 < self.position.x < pad.position.x + 62:
-                ball_x_speed *= -1
-                ball_y_speed *= -1
+                #ball_x_speed *= -1
+                self.ball_y_speed *= -1
             else:
                 time.sleep(2)
                 self.position = Vector(265, 700)
 
+class Health:
+
+    def __init__(self, x):
+        self.actor = Actor('health.png', center=(x, 30))
+        self.position = Vector(x, 30)
+        self.line1 = Vector(0, 60)
+        self.line2 = Vector(600, 60)
+
+    def draw(self):
+        screen.draw.line((self.line1.x, self.line1.y), (self.line2.x, self.line2.y), "indigo")
+        self.actor.x = self.position.x + 25
+        self.actor.y = self.position.y
+        self.actor.draw()
 
 class Vector:
 
@@ -75,19 +85,20 @@ class Vector:
     def __sub__(self, other):
         return Vector(self.x - other.x, 0)
 
-
 WIDTH = 600
 HEIGHT = 800
 
 pad = Paddle()
 bg = Background()
 bb = Ball()
+hh = [Health(x*45) for x in range(3)]
 
 
 def draw():
     screen.clear()
     bg.draw()
     pad.draw()
+    [x.draw() for x in hh]
     bb.draw()
 
 
