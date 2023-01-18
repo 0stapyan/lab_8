@@ -9,22 +9,33 @@ from pgzero.actor import Actor
 class Paddle:
 
     def __init__(self):
-        self.actor = Actor('i.png', center=(300, 765))
+        self.actor1 = Actor("i.png", center=(300, 765))
+        self.actor2 = Actor("i2.png", center=(300, 765))
         self.position = Vector(300, 765)
         self.center = Vector(62, 765)
 
     def draw(self):
+        if bns == 1:
+            self.actor2.draw()
+        else:
+            self.actor1.draw()
         screen.draw.line((0, 60), (600, 60), "indigo")
-        self.actor.draw()
 
     def update(self, pos):
+        if bns == 1:
+            self.actor1.x = self.position.x
+        else:
+            self.actor2.x = self.position.x
         mouse_x = pos[0]
         if mouse_x < self.center.x:
             mouse_x = self.center.x
         if mouse_x > WIDTH - self.center.x:
             mouse_x = WIDTH - self.center.x
         self.position = Vector(mouse_x, self.position.y)
-        self.actor.x = self.position.x
+        if bns > 0:
+            self.actor2.x = self.position.x
+        else:
+            self.actor1.x = self.position.x
 
 
 class Background:
@@ -45,11 +56,16 @@ class Ball:
         self.ball_x_speed = 6
         self.ball_y_speed = 6
         self.tries = 3
+        self.land = 0
 
     def draw(self):
         screen.draw.filled_circle((self.position.x, self.position.y), 13, "indigo")
 
     def update(self):
+        if bns == 0:
+            self.land = 93
+        else:
+            self.land = 62
         self.position.x += self.ball_x_speed
         self.position.y += self.ball_y_speed
         if (self.position.x >= WIDTH) or (self.position.x <= 0):
@@ -57,13 +73,13 @@ class Ball:
         if self.position.y <= 66:
             self.ball_y_speed *= -1
         if self.position.y >= pad.position.y - 5:
-            if pad.position.x - 62 < self.position.x < pad.position.x + 62:
+            if pad.position.x - self.land < self.position.x < pad.position.x + self.land:
                 # ball_x_speed *= -1
                 self.ball_y_speed *= -1
             else:
                 if self.tries > 0:
                     self.tries -= 1
-                    time.sleep(0.5)
+                    time.sleep(0.1)
                     self.position = Vector(265, 300)
                 else:
                     time.sleep(2)
@@ -106,13 +122,31 @@ class Blocks2:
         pass
 
 
-
 class AddHealth:
 
     def __init__(self, pos):
         self.actor = Actor('he1.png')
         self.position = pos
         self.velocity = Vector(0, 100)
+
+    def move(self, dt):
+        self.position.x += self.velocity.x * dt
+        self.position.y += self.velocity.y * dt
+
+    def draw(self):
+        self.actor.x = self.position.x
+        self.actor.y = self.position.y
+        self.actor.draw()
+
+
+class AddBonus:
+
+    def __init__(self, pos):
+        self.actor = Actor('bonus.png')
+        self.position = pos
+        self.velocity = Vector(0, 100)
+        self.bonus_catch = 0
+        self.current_time = 0
 
     def move(self, dt):
         self.position.x += self.velocity.x * dt
@@ -168,6 +202,9 @@ new_health = []
 d = {}
 for obj in b2:
     d[obj] = 0
+bonuses = []
+bns = 0
+start = 0
 
 
 def draw():
@@ -180,6 +217,7 @@ def draw():
     [x.draw() for x in b1]
     [x.draw() for x in b2]
     [h.draw() for h in new_health]
+    [bn.draw() for bn in bonuses]
     if bb.tries == 0:
         screen.clear()
         bg.draw()
@@ -191,6 +229,7 @@ def draw():
 
 
 def update(dt):
+    global bns, start
     bb.update()
     for obs in b1:
         if (obs.position.x - 18 < bb.position.x < obs.position.x + 18) \
@@ -217,12 +256,26 @@ def update(dt):
     for h in new_health:
         h.move(dt)
         if 800 >= h.position.y >= 763:
-            if pad.position.x - 62 < h.position.x < pad.position.x + 62:
+            if pad.position.x - bb.land < h.position.x < pad.position.x + bb.land:
                 if bb.tries < 3:
                     bb.tries += 1
                     new_health.remove(h)
                 else:
                     continue
+
+    if random.random() < 0.001:
+        bnn = AddBonus(Vector(random.randint(0, WIDTH), 55))
+        bonuses.append(bnn)
+    for bn in bonuses:
+        bn.move(dt)
+        if bns == 0:
+            if 800 >= bn.position.y >= 763:
+                if pad.position.x - bb.land < bn.position.x < pad.position.x + bb.land:
+                    bns = 1
+                    start = pygame.time.get_ticks()
+                    bonuses.remove(bn)
+    if (pygame.time.get_ticks() - start)/1000 > 4:
+        bns = 0
 
 
 def on_mouse_move(pos):
