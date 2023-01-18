@@ -184,7 +184,7 @@ def draw():
         screen.clear()
         bg.draw()
         fin.draw()
-    if len(b1) == 0:
+    if len(b1) == 0 and len(b2) == 0:
         screen.clear()
         bg.draw()
         win.draw()
