@@ -94,16 +94,17 @@ class Blocks1:
         pass
 
 
-# class Blocks2:
-#
-#     def __init__(self, x, y):
-#         self.position = Vector(x, y)
-#
-#     def draw(self):
-#         screen.draw.filled_rect(pygame.Rect((self.position.x, self.position.y, 85, 29)), "crimson")  # x = 25 y = 261
-#
-#     def update(self):
-#         pass
+class Blocks2:
+
+    def __init__(self, x, y):
+        self.position = Vector(x, y)
+
+    def draw(self):
+        screen.draw.filled_circle((self.position.x, self.position.y), 18, "crimson")
+
+    def update(self):
+        pass
+
 
 
 class AddHealth:
@@ -159,11 +160,14 @@ HEIGHT = 800
 pad = Paddle()
 bg = Background()
 bb = Ball()
-b1 = [Blocks1(x*45+45, y*45) for x in range(12) for y in range(3, 6)]
-# b2 = [Blocks2((x+1)*27+85*x, y*45) for x in range(5) for y in range(6, 9)]
+b1 = [Blocks1(x*45+45, y*45) for x in range(12) for y in range(3, 6, 2)]
+b2 = [Blocks2(x*45+45, y*45) for x in range(12) for y in range(4, 5)]
 fin = Finish()
 win = Winmessage()
 new_health = []
+d = {}
+for obj in b2:
+    d[obj] = 0
 
 
 def draw():
@@ -174,7 +178,7 @@ def draw():
     [x.draw() for x in hh]
     bb.draw()
     [x.draw() for x in b1]
-    # [x.draw() for x in b2]
+    [x.draw() for x in b2]
     [h.draw() for h in new_health]
     if bb.tries == 0:
         screen.clear()
@@ -190,8 +194,18 @@ def update(dt):
     bb.update()
     for obs in b1:
         if (obs.position.x - 18 < bb.position.x < obs.position.x + 18) \
-                and (obs.position.y -18 < bb.position.y < obs.position.y + 18):
+                and (obs.position.y - 18 < bb.position.y < obs.position.y + 18):
             b1.remove(obs)
+            bb.ball_y_speed *= -1
+            rand = random.randint(0, 1)
+            if rand:
+                bb.ball_x_speed *= -1
+    for i in b2:
+        if (i.position.x - 18 < bb.position.x < i.position.x + 18) \
+                and (i.position.y - 18 < bb.position.y < i.position.y + 18):
+            d[i] += 1
+            if d[i] == 2:
+                b2.remove(i)
             bb.ball_y_speed *= -1
             rand = random.randint(0, 1)
             if rand:
@@ -204,8 +218,11 @@ def update(dt):
         h.move(dt)
         if 800 >= h.position.y >= 763:
             if pad.position.x - 62 < h.position.x < pad.position.x + 62:
-                bb.tries += 1
-                new_health.remove(h)
+                if bb.tries < 3:
+                    bb.tries += 1
+                    new_health.remove(h)
+                else:
+                    continue
 
 
 def on_mouse_move(pos):
