@@ -19,6 +19,7 @@ class Paddle:
             self.actor2.draw()
         else:
             self.actor1.draw()
+        screen.draw.filled_rect(pygame.Rect((0, 0, 600, 60)), "thistle")
         screen.draw.line((0, 60), (600, 60), "indigo")
 
     def update(self, pos):
@@ -50,7 +51,7 @@ class Background:
 class Ball:
 
     def __init__(self):
-        self.position = Vector(265, 300)
+        self.position = Vector(265, 469)
         self.velocity = Vector(0, 0)  # speed- scalar, velocity - vector
         self.goal = Vector(pad.position.x, pad.position.y)
         self.ball_x_speed = 6
@@ -117,6 +118,18 @@ class Blocks2:
 
     def draw(self):
         screen.draw.filled_circle((self.position.x, self.position.y), 18, "crimson")
+
+    def update(self):
+        pass
+
+
+class Blocks3:
+
+    def __init__(self, x, y):
+        self.position = Vector(x, y)
+
+    def draw(self):
+        screen.draw.filled_rect(pygame.Rect((self.position.x, self.position.y, 84, 28)), "midnightblue")  # x = 25 y = 261
 
     def update(self):
         pass
@@ -190,12 +203,14 @@ class Vector:
 
 WIDTH = 600
 HEIGHT = 800
+points = 0
 
 pad = Paddle()
 bg = Background()
 bb = Ball()
 b1 = [Blocks1(x*45+45, y*45) for x in range(12) for y in range(3, 6, 2)]
 b2 = [Blocks2(x*45+45, y*45) for x in range(12) for y in range(4, 5)]
+b3 = [Blocks3((x+1)*27+85*x, y*45) for x in range(5) for y in range(6, 9)]
 fin = Finish()
 win = Winmessage()
 new_health = []
@@ -212,10 +227,12 @@ def draw():
     bg.draw()
     pad.draw()
     hh = [Health(x*45) for x in range(0, bb.tries)]
+    screen.draw.text(f"points: {points}", (459, 20), color=(0, 0, 200))
     [x.draw() for x in hh]
     bb.draw()
     [x.draw() for x in b1]
     [x.draw() for x in b2]
+    [x.draw() for x in b3]
     [h.draw() for h in new_health]
     [bn.draw() for bn in bonuses]
     if bb.tries == 0:
@@ -229,26 +246,40 @@ def draw():
 
 
 def update(dt):
-    global bns, start
+    global bns, start, points
     bb.update()
     for obs in b1:
         if (obs.position.x - 18 < bb.position.x < obs.position.x + 18) \
                 and (obs.position.y - 18 < bb.position.y < obs.position.y + 18):
             b1.remove(obs)
+            points += 1
             bb.ball_y_speed *= -1
             rand = random.randint(0, 1)
             if rand:
                 bb.ball_x_speed *= -1
+
     for i in b2:
         if (i.position.x - 18 < bb.position.x < i.position.x + 18) \
                 and (i.position.y - 18 < bb.position.y < i.position.y + 18):
             d[i] += 1
             if d[i] == 2:
                 b2.remove(i)
+                points += 1
             bb.ball_y_speed *= -1
             rand = random.randint(0, 1)
             if rand:
                 bb.ball_x_speed *= -1
+
+    for p in b3:
+        if (p.position.x - 24 < bb.position.x < p.position.x + 24) \
+                and (bb.position.y < p.position.y + 14):
+            # print("="*50)
+            b3.remove(p)
+            points += 1
+            bb.ball_y_speed *= -1
+            # rand = random.randint(0, 1)
+            # if rand:
+            #     bb.ball_x_speed *= -1
 
     if random.random() < 0.001:
         ah = AddHealth(Vector(random.randint(0, WIDTH), 55))
