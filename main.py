@@ -81,10 +81,10 @@ class Ball:
                 if self.tries > 0:
                     self.tries -= 1
                     time.sleep(0.1)
-                    self.position = Vector(265, 300)
+                    self.position = Vector(265, 469)
                 else:
                     time.sleep(2)
-                    self.position = Vector(265, 300)
+                    self.position = Vector(265, 469)
 
 
 class Health:
@@ -271,12 +271,17 @@ def update(dt):
                 bb.ball_x_speed *= -1
 
     for p in b3:
-        if (p.position.x - 24 < bb.position.x < p.position.x + 24) \
-                and (bb.position.y < p.position.y + 14):
+        if (p.position.x < bb.position.x < p.position.x + 83) \
+                and (p.position.y < bb.position.y < p.position.y + 15):
             # print("="*50)
             b3.remove(p)
             points += 1
             bb.ball_y_speed *= -1
+        if (bb.position.x == p.position.x or bb.position.x == p.position.x + 83) \
+                and (bb.position.y < p.position.y + 15):
+            b3.remove(p)
+            points += 1
+            bb.ball_x_speed *= -1
             # rand = random.randint(0, 1)
             # if rand:
             #     bb.ball_x_speed *= -1
